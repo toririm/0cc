@@ -25,5 +25,9 @@ assert 15 "5*(9-6)"
 assert 4 "(3+5)/2"
 assert 15 "-3*-5"
 assert 1 "-(2+3)/-5"
+assert 1 "0 < 1"
+assert 1 "3*5+1==4*4*(2 - 1 * 2 >= 0)"
+assert 1 "1 <= 2"
+assert 1 " 1<=1"
 
 echo OK
