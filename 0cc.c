@@ -267,9 +267,9 @@ Node *primary() {
 
 Node *unary() {
   if (consume("+"))
-    return primary();
+    return unary();
   if (consume("-"))
-    return new_node(ND_SUB, new_node_num(0), primary());
+    return new_node(ND_SUB, new_node_num(0), unary());
   return primary();
 }
 
@@ -302,18 +302,22 @@ void gen(Node *node) {
     case ND_EQU:
       printf("  cmp rax, rdi\n");
       printf("  sete al\n");
+      printf("  movzb rax, al\n");
       break;
     case ND_NEQ:
       printf("  cmp rax, rdi\n");
       printf("  setne al\n");
+      printf("  movzb rax, al\n");
       break;
     case ND_LES:
       printf("  cmp rax, rdi\n");
       printf("  setl al\n");
+      printf("  movzb rax, al\n");
       break;
     case ND_LEQ:
       printf("  cmp rax, rdi\n");
       printf("  setle al\n");
+      printf("  movzb rax, al\n");
       break;
   }
 
