@@ -64,11 +64,11 @@ bool at_eof() {
 }
 
 // 新しいトークンを作成してcurに繋げる
-Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
+// このあとに cur->len を指定してやる必要がある
+Token *new_token(TokenKind kind, Token *cur, char *str) {
   Token *tok = calloc(1, sizeof(Token));
   tok->kind = kind;
   tok->str = str;
-  tok->len = len;
   cur->next = tok;
   return tok;
 }
@@ -92,19 +92,21 @@ Token *tokenize(char *p) {
       || !memcmp(p, "<=", 2)
       || !memcmp(p, ">=", 2)
     ) {
-      cur = new_token(TK_RESERVED, cur, p, 2);
+      cur = new_token(TK_RESERVED, cur, p);
+      cur->len = 2;
       p+=2;
       continue;
     }
 
     if (strchr("+-*/()<>", *p)) {
-      cur = new_token(TK_RESERVED, cur, p++, 1);
+      cur = new_token(TK_RESERVED, cur, p++);
+      cur->len = 1;
       continue;
     }
 
     if (isdigit(*p)) {
       char *head = p;
-      cur = new_token(TK_NUM, cur, p, 0);
+      cur = new_token(TK_NUM, cur, p);
       cur->val = strtol(p, &p, 10);
       cur->len = p - head;
       continue;
@@ -113,7 +115,7 @@ Token *tokenize(char *p) {
     error_at(p, "トークナイズできません");
   }
 
-  new_token(TK_EOF, cur, p, 0);
+  new_token(TK_EOF, cur, p);
   return head.next;
 }
 
