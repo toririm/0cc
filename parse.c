@@ -103,8 +103,10 @@ Token *tokenize(char *p) {
     }
 
     if (isdigit(*p)) {
+      char *head = p;
       cur = new_token(TK_NUM, cur, p, 0);
       cur->val = strtol(p, &p, 10);
+      cur->len = p - head;
       continue;
     }
 
