@@ -47,6 +47,15 @@ struct Node {
   int offset; // ND_LVAR
 };
 
+typedef struct LVar LVar;
+
+struct LVar {
+  LVar *next;
+  char *name;
+  int len;
+  int offset;
+};
+
 // 入力プログラム
 extern char *user_input;
 
@@ -55,6 +64,9 @@ extern Token *token;
 
 // stmtのASTの配列
 extern Node *code[100];
+
+// ローカル変数
+extern LVar *locals;
 
 // parse.c
 

@@ -3,6 +3,7 @@
 char *user_input;
 Token *token;
 Node *code[100];
+LVar *locals;
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -11,6 +12,7 @@ int main(int argc, char **argv) {
   }
 
   user_input = argv[1];
+  locals = calloc(1, sizeof(LVar));
   token = tokenize(user_input);
   program();
 
