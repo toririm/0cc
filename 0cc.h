@@ -36,6 +36,8 @@ typedef enum {
   ND_NUM,
   ND_LVAR,
   ND_RETURN,
+  ND_IF,
+  ND_IFELSE,
 } NodeKind;
 
 typedef struct Node Node;

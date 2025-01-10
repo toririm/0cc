@@ -38,5 +38,8 @@ assert 100 " z = 99; z + 1;"
 assert 9 "foo = 7; bar=2; fizz=foo+bar;fizz;"
 assert 5 "return 5;"
 assert 6 "foo=2; bar = 3; return foo * bar; return 3;"
+assert 1 "if (1 + 3 == 4) 3 - 2;"
+assert 0 "if (35 < 1) return 1; else return 0;"
+assert 2 "0; if (0 == 0) return 2;"
 
 echo OK
