@@ -2,6 +2,7 @@
 
 char *user_input;
 Token *token;
+Node *code[100];
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -11,16 +12,31 @@ int main(int argc, char **argv) {
 
   user_input = argv[1];
   token = tokenize(user_input);
-  Node *node = expr();
+  program();
 
   // アセンブリの前半部分を出力
   printf(".intel_syntax noprefix\n");
   printf(".globl main\n");
   printf("main:\n");
 
-  gen(node);
+  // プロローグ
+  // 26 * 8 = 208, 変数26個分の領域を確保する
+  printf("  push rbp\n");
+  printf("  mov rbp, rsp\n");
+  printf("  sub rsp, 208\n");
 
-  printf("  pop rax\n");
+  for (int i = 0; code[i]; i++) {
+    gen(code[i]);
+
+    // 式の評価結果のスタックを取り除く
+    printf("  pop rax\n");
+  }
+
+  // エピローグ
+  // 変数で確保しておいたRSPをRBPと同じ場所に戻す
+  printf("  mov rsp, rbp\n");
+  // popでRSPがリターンアドレスを指し、RBPを関数呼び出し前のRBPに戻す
+  printf("  pop rbp\n");
   printf("  ret\n");
   return 0;
 }
