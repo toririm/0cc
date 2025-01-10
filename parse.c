@@ -73,6 +73,13 @@ bool at_eof() {
   return token->kind == TK_EOF;
 }
 
+bool is_alnum(char c) {
+  return ('a' <= c && c <= 'z') ||
+          ('A' <= c && c <= 'Z') ||
+          ('0' <= c && c <= '9') ||
+          (c == '_');
+}
+
 LVar *find_lvar(Token *tok) {
   for (LVar *var = locals; var; var = var->next)
     if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
@@ -100,6 +107,13 @@ Token *tokenize(char *p) {
     // 空白文字をスキップ
     if (isspace(*p)) {
       p++;
+      continue;
+    }
+
+    if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
+      cur = new_token(TK_RESERVED, cur, p);
+      cur->len = 6;
+      p += 6;
       continue;
     }
 
@@ -131,7 +145,7 @@ Token *tokenize(char *p) {
 
     if ('a' <= *p && *p <= 'z') {
       cur = new_token(TK_IDENT, cur, p);
-      while ('a' <= *p && *p <= 'z')
+      while (is_alnum(*p))
         p++;
       cur->len = p - cur->str;
       continue;
@@ -147,6 +161,7 @@ Token *tokenize(char *p) {
 /*
 program    = stmt*
 stmt       = expr ";"
+           | "return" expr ";"
 expr       = assign
 assign     = equality ("=" assign)?
 equality   = relational ("==" relational | "!=" relational)*
@@ -180,7 +195,15 @@ void program() {
 }
 
 Node *stmt() {
-  Node *node = expr();
+  Node *node;
+  if (consume("return")) {
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_RETURN;
+    node->lhs = expr();
+  } else {
+    node = expr();
+  }
+  
   expect(";");
   return node;
 }

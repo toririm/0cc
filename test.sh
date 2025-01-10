@@ -36,5 +36,7 @@ assert 1 "0!=1;"
 assert 6 "a=3; b = 2; a * b;"
 assert 100 " z = 99; z + 1;"
 assert 9 "foo = 7; bar=2; fizz=foo+bar;fizz;"
+assert 5 "return 5;"
+assert 6 "foo=2; bar = 3; return foo * bar; return 3;"
 
 echo OK
