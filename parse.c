@@ -157,7 +157,7 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    if (strchr("+-*/()<>=;{}", *p)) {
+    if (strchr("+-*/%()<>=;{}", *p)) {
       cur = new_token(TK_RESERVED, cur, p++);
       cur->len = 1;
       continue;
@@ -199,7 +199,7 @@ assign     = equality ("=" assign)?
 equality   = relational ("==" relational | "!=" relational)*
 relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 add        = mul ("+" mul | "-" mul)*
-mul        = unary ("*" unary | "/" unary)*
+mul        = unary ("*" unary | "/" unary | "%" unary)*
 unary      = ("+" | "-")? primary
 primary    = num
            | ident ("(" ")")?
@@ -374,6 +374,8 @@ Node *mul() {
       node = new_node(ND_MUL, node, unary());
     else if (consume("/"))
       node = new_node(ND_DIV, node, unary());
+    else if (consume("%"))
+      node = new_node(ND_MOD, node, unary());
     else
       return node;
   }
