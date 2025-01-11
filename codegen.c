@@ -106,8 +106,9 @@ void gen(Node *node) {
       return;
     case ND_BLOCK:
       int i = 0;
-      while (node->block_stmts[i]) {
-        gen(node->block_stmts[i++]);
+      // stmts を取り出す
+      while (node->nodes[i]) {
+        gen(node->nodes[i++]);
 
         printf("  pop rax\n");
       }

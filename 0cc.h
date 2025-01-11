@@ -52,9 +52,9 @@ struct Node {
   NodeKind kind;
   Node *lhs;
   Node *rhs;
-  int val;
+  int val;                // ND_NUMの値, if/for/whileなどのlabel_index
   int offset;             // ND_LVAR
-  Node *block_stmts[100]; // ND_BLOCK
+  Node *nodes[100];       // ND_BLOCKの中身
   char *func_name;        // ND_FUNC_CALL
 };
 

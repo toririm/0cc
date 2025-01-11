@@ -290,10 +290,11 @@ Node *stmt() {
     node = calloc(1, sizeof(Node));
     node->kind = ND_BLOCK;
     int i = 0;
+    // ブロック内の stmts を保存する
     while (!consume("}")) {
-      node->block_stmts[i++] = stmt();
+      node->nodes[i++] = stmt();
     }
-    node->block_stmts[i] = NULL;
+    node->nodes[i] = NULL;
     return node;
   }
 
