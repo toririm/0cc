@@ -201,7 +201,9 @@ relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 add        = mul ("+" mul | "-" mul)*
 mul        = unary ("*" unary | "/" unary)*
 unary      = ("+" | "-")? primary
-primary    = num | ident | "(" expr ")"
+primary    = num
+           | ident ("(" ")")?
+           | "(" expr ")"
 */
 
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
@@ -386,6 +388,16 @@ Node *primary() {
   Token *tok = consume_ident();
   if (tok) {
     Node *node = calloc(1, sizeof(Node));
+
+    if (consume("(")) {
+      node->kind = ND_FUNC_CALL;
+      node->func_name = calloc(tok->len, sizeof(char));
+      strncpy(node->func_name, tok->str, tok->len);
+      node->func_name[tok->len] = '\0';
+      expect(")");
+      return node;
+    }
+
     node->kind = ND_LVAR;
     
     LVar *lvar = find_lvar(tok);
