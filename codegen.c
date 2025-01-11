@@ -12,15 +12,15 @@ void gen_lval(Node *node) {
 
 void gen_if(Node *node) {
   if (node->kind != ND_IFELSE) {
-    printf("  je .Lend\n");
+    printf("  je .Lend%d\n", node->val);
     gen(node);
     return;
   }
   
-  printf("  je .Lelse\n");
+  printf("  je .Lelse%d\n", node->val);
   gen(node->lhs);
-  printf("  jmp .Lend\n");
-  printf(".Lelse:\n");
+  printf("  jmp .Lend%d\n", node->val);
+  printf(".Lelse%d:\n", node->val);
   gen(node->rhs);
 }
 
@@ -57,7 +57,7 @@ void gen(Node *node) {
       printf("  pop rax\n");
       printf("  cmp rax, 0\n");
       gen_if(node->rhs);
-      printf(".Lend:\n");
+      printf(".Lend%d:\n", node->val);
       return;
   }
 

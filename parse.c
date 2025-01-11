@@ -218,11 +218,15 @@ Node *stmt() {
     expect(")");
     Node *if_node = stmt();
     node = new_node(ND_IF, cond, if_node);
+    // "if" の識別番号をvalに保存する
+    node->val = if_index++;
 
     if (consume("else")) {
       Node *else_node = stmt();
       node->rhs = new_node(ND_IFELSE, node->rhs, else_node);
+      node->rhs->val = node->val;
     }
+
     return node;
   }
 

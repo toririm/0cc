@@ -41,5 +41,8 @@ assert 6 "foo=2; bar = 3; return foo * bar; return 3;"
 assert 1 "if (1 + 3 == 4) 3 - 2;"
 assert 0 "if (35 < 1) return 1; else return 0;"
 assert 2 "0; if (0 == 0) return 2;"
+assert 3 "if (0) return 1; if (2) return 3; return 4;"
+assert 3 "if (0) return 1; else if (2) return 3; else return 4;"
+assert 1 "if (4 != 4) return 3; else if (2) return 1; else return 0;"
 
 echo OK

@@ -71,6 +71,9 @@ extern Node *code[100];
 // ローカル変数
 extern LVar *locals;
 
+// "if" ブロックの数
+extern int if_index;
+
 // parse.c
 
 void error(char *fmt, ...);
