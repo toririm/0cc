@@ -24,6 +24,31 @@ void gen_if(Node *node) {
   gen(node->rhs);
 }
 
+void gen_for_cond(Node *node) {
+  if (node->kind != ND_FOR_COND)
+    error("不正なASTです\n");
+  
+  if (node->lhs) {
+    gen(node->lhs);
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je .Lend%d\n", node->val);
+  }
+  
+  // ND_FOR_UPDT_STMT の処理を委譲する
+  gen_for_updt_stmt(node->rhs);
+}
+
+void gen_for_updt_stmt(Node *node) {
+  if (node->kind != ND_FOR_UPDT_STMT)
+    error("不正なASTです\n");
+  
+  gen(node->rhs);
+  if (node->lhs)
+    gen(node->lhs);
+  printf("  jmp .Lbegin%d\n", node->val);
+}
+
 void gen(Node *node) {
   switch (node->kind) {
     case ND_NUM:
@@ -67,6 +92,16 @@ void gen(Node *node) {
       printf("  je .Lend%d\n", node->val);
       gen(node->rhs);
       printf("  jmp .Lbegin%d\n", node->val);
+      printf(".Lend%d:\n", node->val);
+      return;
+    case ND_FOR_INIT:
+      if (node->lhs)
+        gen(node->lhs);
+      printf(".Lbegin%d:\n", node->val);
+
+      // ND_FOR_COND の処理を委譲する
+      gen_for_cond(node->rhs);
+      
       printf(".Lend%d:\n", node->val);
       return;
   }

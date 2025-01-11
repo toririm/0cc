@@ -138,6 +138,13 @@ Token *tokenize(char *p) {
       continue;
     }
 
+    if (strncmp(p, "for", 3) == 0 && !is_alnum(p[3])) {
+      cur = new_token(TK_RESERVED, cur, p);
+      cur->len = 3;
+      p += 3;
+      continue;
+    }
+
     if (
       !memcmp(p, "==", 2)
       || !memcmp(p, "!=", 2)
@@ -185,6 +192,7 @@ stmt       = expr ";"
            | "return" expr ";"
            | "if" "(" expr ")" stmt ("else" stmt)?
            | "while" "(" expr ")" stmt
+           | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 expr       = assign
 assign     = equality ("=" assign)?
 equality   = relational ("==" relational | "!=" relational)*
@@ -245,6 +253,33 @@ Node *stmt() {
     Node *while_node = stmt();
     node = new_node(ND_WHILE, cond, while_node);
     node->val = label_index++;
+    return node;
+  }
+
+  if (consume("for")) {
+    expect("(");
+    Node *init = NULL;
+    Node *cond = NULL;
+    Node *updt = NULL;
+    if (!consume(";")) {
+      init = expr();
+      expect(";");
+    }
+    if (!consume(";")) {
+      cond = expr();
+      expect(";");
+    }
+    if (!consume(")")) {
+      updt = expr();
+      expect(")");
+    }
+    Node *for_node = stmt();
+
+    Node *for_updt_stmt = new_node(ND_FOR_UPDT_STMT, updt, for_node);
+    Node *for_cond = new_node(ND_FOR_COND, cond, for_updt_stmt);
+    node = new_node(ND_FOR_INIT, init, for_cond);
+    node->val = for_cond->val = for_updt_stmt->val = label_index++;
+
     return node;
   }
 
