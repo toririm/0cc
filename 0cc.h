@@ -38,6 +38,7 @@ typedef enum {
   ND_RETURN,
   ND_IF,
   ND_IFELSE,
+  ND_WHILE,
 } NodeKind;
 
 typedef struct Node Node;
@@ -71,8 +72,8 @@ extern Node *code[100];
 // ローカル変数
 extern LVar *locals;
 
-// "if" ブロックの数
-extern int if_index;
+// ラベルの unique identifier
+extern int label_index;
 
 // parse.c
 

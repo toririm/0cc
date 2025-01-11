@@ -131,6 +131,13 @@ Token *tokenize(char *p) {
       continue;
     }
 
+    if (strncmp(p, "while", 5) == 0 && !is_alnum(p[5])) {
+      cur = new_token(TK_RESERVED, cur, p);
+      cur->len = 5;
+      p += 5;
+      continue;
+    }
+
     if (
       !memcmp(p, "==", 2)
       || !memcmp(p, "!=", 2)
@@ -177,6 +184,7 @@ program    = stmt*
 stmt       = expr ";"
            | "return" expr ";"
            | "if" "(" expr ")" stmt ("else" stmt)?
+           | "while" "(" expr ")" stmt
 expr       = assign
 assign     = equality ("=" assign)?
 equality   = relational ("==" relational | "!=" relational)*
@@ -219,7 +227,7 @@ Node *stmt() {
     Node *if_node = stmt();
     node = new_node(ND_IF, cond, if_node);
     // "if" の識別番号をvalに保存する
-    node->val = if_index++;
+    node->val = label_index++;
 
     if (consume("else")) {
       Node *else_node = stmt();
@@ -227,6 +235,16 @@ Node *stmt() {
       node->rhs->val = node->val;
     }
 
+    return node;
+  }
+
+  if (consume("while")) {
+    expect("(");
+    Node *cond = expr();
+    expect(")");
+    Node *while_node = stmt();
+    node = new_node(ND_WHILE, cond, while_node);
+    node->val = label_index++;
     return node;
   }
 

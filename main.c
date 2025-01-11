@@ -4,7 +4,7 @@ char *user_input;
 Token *token;
 Node *code[100];
 LVar *locals;
-int if_index = 0;
+int label_index = 0;
 
 int main(int argc, char **argv) {
   if (argc != 2) {
