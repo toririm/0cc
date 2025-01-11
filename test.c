@@ -6,4 +6,5 @@ int foo() {
 
 int bar() {
     printf("bar() called!\n");
+    return 127;
 }
