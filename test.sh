@@ -48,5 +48,7 @@ assert 5 "i = 0; while (i < 5) i = i + 1;"
 assert 5 "for (i = 0; i < 5; i = i + 1) i;"
 assert 5 "i = 0; for (;i<5;i=i+1) i;"
 assert 5 "i = 0; for (;i<5;) i = i + 1;"
+assert 5 "i = 0; for (;;) {if (i<5) {i=i+1;} else return i;} 0;"
+assert 45 "sum = 0; for (i=0;i<10;i=i+1) {sum=sum+i;} return sum;"
 
 echo OK

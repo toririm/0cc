@@ -101,8 +101,16 @@ void gen(Node *node) {
 
       // ND_FOR_COND の処理を委譲する
       gen_for_cond(node->rhs);
-      
+
       printf(".Lend%d:\n", node->val);
+      return;
+    case ND_BLOCK:
+      int i = 0;
+      while (node->block_stmts[i]) {
+        gen(node->block_stmts[i++]);
+
+        printf("  pop rax\n");
+      }
       return;
   }
 

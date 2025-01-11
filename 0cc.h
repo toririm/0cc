@@ -42,6 +42,7 @@ typedef enum {
   ND_FOR_INIT,
   ND_FOR_COND,
   ND_FOR_UPDT_STMT,
+  ND_BLOCK,
 } NodeKind;
 
 typedef struct Node Node;
@@ -52,6 +53,7 @@ struct Node {
   Node *rhs;
   int val;
   int offset; // ND_LVAR
+  Node *block_stmts[100]; // ND_BLOCK
 };
 
 typedef struct LVar LVar;

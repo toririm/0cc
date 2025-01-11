@@ -157,7 +157,7 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    if (strchr("+-*/()<>=;", *p)) {
+    if (strchr("+-*/()<>=;{}", *p)) {
       cur = new_token(TK_RESERVED, cur, p++);
       cur->len = 1;
       continue;
@@ -189,6 +189,7 @@ Token *tokenize(char *p) {
 /*
 program    = stmt*
 stmt       = expr ";"
+           | "{" stmt* "}"
            | "return" expr ";"
            | "if" "(" expr ")" stmt ("else" stmt)?
            | "while" "(" expr ")" stmt
@@ -280,6 +281,17 @@ Node *stmt() {
     node = new_node(ND_FOR_INIT, init, for_cond);
     node->val = for_cond->val = for_updt_stmt->val = label_index++;
 
+    return node;
+  }
+
+  if (consume("{")) {
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_BLOCK;
+    int i = 0;
+    while (!consume("}")) {
+      node->block_stmts[i++] = stmt();
+    }
+    node->block_stmts[i] = NULL;
     return node;
   }
 
