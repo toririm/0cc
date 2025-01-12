@@ -191,7 +191,7 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    if ('a' <= *p && *p <= 'z') {
+    if (is_alnum(*p)) {
       cur = new_token(TK_IDENT, cur, p);
       while (is_alnum(*p))
         p++;
@@ -256,8 +256,10 @@ Node *new_node_lvar(Token *tok) {
 
 void program() {
   int i = 0;
-  while (!at_eof())
-    code[i++] = stmt();
+  while (!at_eof()) {
+    locals = calloc(1, sizeof(LVar));
+    code[i++] = func();
+  }
   code[i] = NULL;
 }
 
@@ -276,14 +278,9 @@ Node *func() {
     if (arg_idx > 0) expect(",");
 
     tok = consume_ident();
-    if (tok) error("関数の引数が不正です\n");
+    if (!tok) error("関数の引数が不正です\n");
 
-    LVar *lvar = new_lvar(tok->str, tok->len);
-    Node *arg = new_node(ND_LVAR, NULL, NULL);
-    arg->name = strcopy_n(tok->str, tok->len);
-    arg->offset = lvar->offset;
-
-    node->args[arg_idx++] = arg;
+    node->args[arg_idx++] = new_node_lvar(tok);
   }
   node->args[arg_idx] = NULL;
 

@@ -235,8 +235,26 @@ void gen_func(Node *node) {
   printf("  mov rbp, rsp\n");
   printf("  sub rsp, %d\n", node->offset);
 
+  // 関数の引数のレジスタの値を変数に保存
   int arg_idx = 0;
-  while (node->args[arg_idx]) {
-    
+  Node *arg;
+  while (arg = node->args[arg_idx]) {
+    gen_lval(arg);
+    printf("  pop rax\n");
+    printf("  mov [rax], %s\n", ARG_RGST[arg_idx++]);
   }
+
+  Node *stmt;
+  for (int i = 0; stmt = node->stmts[i]; i++) {
+    gen(stmt);
+
+    printf("  pop rax\n");
+  }
+
+  // エピローグ
+  // 変数で確保しておいたRSPをRBPと同じ場所に戻す
+  printf("  mov rsp, rbp\n");
+  // popでRSPがリターンアドレスを指し、RBPを関数呼び出し前のRBPに戻す
+  printf("  pop rbp\n");
+  printf("  ret\n");
 }

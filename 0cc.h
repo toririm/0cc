@@ -109,7 +109,9 @@ Token *tokenize(char *p);
 
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+Node *new_node_lvar(Token *tok);
 void program();
+Node *func();
 Node *stmt();
 Node *expr();
 Node *assign();

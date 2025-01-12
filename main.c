@@ -21,27 +21,17 @@ int main(int argc, char **argv) {
 
   // アセンブリの前半部分を出力
   printf(".intel_syntax noprefix\n");
-  printf(".globl main\n");
-  printf("main:\n");
 
-  // プロローグ
-  // 26 * 8 = 208, 変数26個分の領域を確保する
-  printf("  push rbp\n");
-  printf("  mov rbp, rsp\n");
-  printf("  sub rsp, 208\n");
+  printf(".globl ");
+  for (int i = 0; code[i]; i++) {
+    if (i > 0) printf(", ");
+    printf("%s", code[i]->name);
+  }
+  printf("\n");
 
   for (int i = 0; code[i]; i++) {
-    gen(code[i]);
-
-    // 式の評価結果のスタックを取り除く
-    printf("  pop rax\n");
+    gen_func(code[i]);
   }
 
-  // エピローグ
-  // 変数で確保しておいたRSPをRBPと同じ場所に戻す
-  printf("  mov rsp, rbp\n");
-  // popでRSPがリターンアドレスを指し、RBPを関数呼び出し前のRBPに戻す
-  printf("  pop rbp\n");
-  printf("  ret\n");
   return 0;
 }
