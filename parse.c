@@ -187,7 +187,8 @@ Token *tokenize(char *p) {
 }
 
 /*
-program    = stmt*
+program    = func*
+func       = ident "(" (ident ("," ident)* )? ")" "{" stmt* "}"
 stmt       = expr ";"
            | "{" stmt* "}"
            | "return" expr ";"
