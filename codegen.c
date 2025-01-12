@@ -49,59 +49,35 @@ void gen_for_updt_stmt(Node *node) {
   printf("  jmp .Lbegin%d\n", node->val);
 }
 
-void gen_func(Node *node) {
-  char *args[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
+void gen_func_call(Node *node) {
 
   int i = 0;
-  for (; node->nodes[i] && i < 6; i++) {
-    gen(node->nodes[i]);
+  for (; node->args[i] && i < 6; i++) {
+    gen(node->args[i]);
   }
   i--;
-  while (i >= 0) printf("  pop %s\n", args[i--]);
+  while (i >= 0) printf("  pop %s\n", ARG_RGST[i--]);
 
   /*
     x86-64のABIのため
     RSPが16の倍数になるように調整
   */
 
-  // 引数の数, 第3引数, 第1引数として使われるRAX, RDX, RDIを一旦退避
-  printf("  push rax\n");
-  printf("  push rdx\n");
-  printf("  push rdi\n");
-
-  // RSP % 16
-  printf("  mov rdi, 16\n");
+  // 現在のRSPを保存
   printf("  mov rax, rsp\n");
-  printf("  cqo\n");
-  printf("  idiv rdi\n");
-  // 商->RAX, 余り->RDX
-
-  // if (RSP % 16)
-  printf("  cmp rdx, 0\n");
-  printf("  je .Lelse%d\n", node->val);
-  // スタックに退避していたRAX, RDX, RDIを戻す
-  printf("  pop rdi\n");
-  printf("  pop rdx\n");
-  printf("  pop rax\n");
-  // popやpushは8byte単位で動かすのでズレている場合は決めうちで8下げる
-  // RSP -= 8;
+  // 16バイトアラインメントをチェック
+  printf("  and rax, 15\n");
+  printf("  jz .Lcall%d\n", node->val);
+  // アラインメントが必要な場合
   printf("  sub rsp, 8\n");
-  printf("  call %s\n", node->func_name);
+  printf("  call %s\n", node->name);
   printf("  add rsp, 8\n");
-  printf("  push rax\n");
   printf("  jmp .Lend%d\n", node->val);
-
-  // else
-  printf(".Lelse%d:\n", node->val);
-  // スタックに退避していたRAX, RDX, RDIを戻す
-  printf("  pop rdi\n");
-  printf("  pop rdx\n");
-  printf("  pop rax\n");
-  printf("  call %s\n", node->func_name);
-  printf("  push rax\n");
-
-  // end if
+  // アラインメントが不要な場合
+  printf(".Lcall%d:\n", node->val);
+  printf("  call %s\n", node->name);
   printf(".Lend%d:\n", node->val);
+  printf("  push rax\n");
 }
 
 void gen(Node *node) {
@@ -162,14 +138,14 @@ void gen(Node *node) {
     case ND_BLOCK:
       int i = 0;
       // stmts を取り出す
-      while (node->nodes[i]) {
-        gen(node->nodes[i++]);
+      while (node->stmts[i]) {
+        gen(node->stmts[i++]);
 
         printf("  pop rax\n");
       }
       return;
     case ND_FUNC_CALL:
-      gen_func(node);
+      gen_func_call(node);
       return;
   }
 
@@ -223,4 +199,39 @@ void gen(Node *node) {
   }
 
   printf("  push rax\n");
+}
+
+void gen_func(Node *node) {
+  if (node->kind != ND_FUNC)
+    error("ND_FUNC expected but found %d\n", node->kind);
+  
+  printf("%s:\n", node->name);
+
+  // プロローグ
+  printf("  push rbp\n");
+  printf("  mov rbp, rsp\n");
+  printf("  sub rsp, %d\n", node->offset);
+
+  // 関数の引数のレジスタの値を変数に保存
+  int arg_idx = 0;
+  Node *arg;
+  while (arg = node->args[arg_idx]) {
+    gen_lval(arg);
+    printf("  pop rax\n");
+    printf("  mov [rax], %s\n", ARG_RGST[arg_idx++]);
+  }
+
+  Node *stmt;
+  for (int i = 0; stmt = node->stmts[i]; i++) {
+    gen(stmt);
+
+    printf("  pop rax\n");
+  }
+
+  // エピローグ
+  // 変数で確保しておいたRSPをRBPと同じ場所に戻す
+  printf("  mov rsp, rbp\n");
+  // popでRSPがリターンアドレスを指し、RBPを関数呼び出し前のRBPに戻す
+  printf("  pop rbp\n");
+  printf("  ret\n");
 }

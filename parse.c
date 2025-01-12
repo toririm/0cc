@@ -87,6 +87,26 @@ LVar *find_lvar(Token *tok) {
   return NULL;
 }
 
+LVar *new_lvar(char *name, int len) {
+  LVar *lvar = calloc(1, sizeof(LVar));
+  lvar->next = locals;
+  lvar->name = name;
+  lvar->len = len;
+  lvar->offset = locals->offset + 8;
+  locals = lvar;
+  return lvar;
+}
+
+/*
+  srcのn文字+ヌル文字\0のn+1のcharを新たに確保し、先頭のポインタを返す
+*/
+char *strcopy_n(char *src, int n) {
+  char *rtn = calloc(n + 1, sizeof(char));
+  strncpy(rtn, src, n);
+  rtn[n] = '\0';
+  return rtn;
+}
+
 // 新しいトークンを作成してcurに繋げる
 // このあとに cur->len を指定してやる必要がある
 Token *new_token(TokenKind kind, Token *cur, char *str) {
@@ -171,7 +191,7 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    if ('a' <= *p && *p <= 'z') {
+    if (is_alnum(*p)) {
       cur = new_token(TK_IDENT, cur, p);
       while (is_alnum(*p))
         p++;
@@ -187,7 +207,8 @@ Token *tokenize(char *p) {
 }
 
 /*
-program    = stmt*
+program    = func*
+func       = ident "(" (ident ("," ident)* )? ")" "{" stmt* "}"
 stmt       = expr ";"
            | "{" stmt* "}"
            | "return" expr ";"
@@ -221,11 +242,57 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *new_node_lvar(Token *tok) {
+  Node *node = new_node(ND_LVAR, NULL, NULL);
+    
+  LVar *lvar = find_lvar(tok);
+  if (!lvar) {
+    lvar = new_lvar(tok->str, tok->len);
+  }
+  node->offset = lvar->offset;
+
+  return node;
+}
+
 void program() {
   int i = 0;
-  while (!at_eof())
-    code[i++] = stmt();
+  while (!at_eof()) {
+    locals = calloc(1, sizeof(LVar));
+    code[i++] = func();
+  }
   code[i] = NULL;
+}
+
+Node *func() {
+  Token *tok;
+
+  tok = consume_ident();
+  if (!tok) error("関数の識別子が不正です\n");
+  expect("(");
+
+  Node *node = new_node(ND_FUNC, NULL, NULL);
+  node->name = strcopy_n(tok->str, tok->len);
+
+  int arg_idx = 0;
+  while (!consume(")")) {
+    if (arg_idx > 0) expect(",");
+
+    tok = consume_ident();
+    if (!tok) error("関数の引数が不正です\n");
+
+    node->args[arg_idx++] = new_node_lvar(tok);
+  }
+  node->args[arg_idx] = NULL;
+
+  expect("{");
+  int stmt_idx = 0;
+  while (!consume("}"))
+    node->stmts[stmt_idx++] = stmt();
+  node->stmts[stmt_idx] = NULL;
+
+  node->offset = locals->offset;
+
+  return node;
 }
 
 Node *stmt() {
@@ -287,22 +354,19 @@ Node *stmt() {
   }
 
   if (consume("{")) {
-    node = calloc(1, sizeof(Node));
-    node->kind = ND_BLOCK;
+    node = new_node(ND_BLOCK, NULL, NULL);
     int i = 0;
     // ブロック内の stmts を保存する
     while (!consume("}")) {
-      node->nodes[i++] = stmt();
+      node->stmts[i++] = stmt();
     }
-    node->nodes[i] = NULL;
+    node->stmts[i] = NULL;
     return node;
   }
 
 
   if (consume("return")) {
-    node = calloc(1, sizeof(Node));
-    node->kind = ND_RETURN;
-    node->lhs = expr();
+    node = new_node(ND_RETURN, expr(), NULL);
   } else {
     node = expr();
   }
@@ -390,41 +454,22 @@ Node *primary() {
 
   Token *tok = consume_ident();
   if (tok) {
-    Node *node = calloc(1, sizeof(Node));
+    Node *node;
 
     if (consume("(")) {
-      node->kind = ND_FUNC_CALL;
+      node = new_node(ND_FUNC_CALL, NULL, NULL);
       node->val = label_index++;
-      node->func_name = calloc(tok->len, sizeof(char));
-      strncpy(node->func_name, tok->str, tok->len);
-      node->func_name[tok->len] = '\0';
+      node->name = strcopy_n(tok->str, tok->len);
       int i = 0;
-      if (!consume(")")) {
-        node->nodes[i++] = expr();
-        while (!consume(")")) {
-          expect(",");
-          node->nodes[i++] = expr();
-        }
+      while (!consume(")")) {
+        if (i > 0) expect(",");
+        node->args[i++] = expr();
       }
-      node->nodes[i] = NULL;
+      node->args[i] = NULL;
       return node;
     }
 
-    node->kind = ND_LVAR;
-    
-    LVar *lvar = find_lvar(tok);
-    if (lvar) {
-      node->offset = lvar->offset;
-    } else {
-      lvar = calloc(1, sizeof(LVar));
-      lvar->next = locals;
-      lvar->name = tok->str;
-      lvar->len = tok->len;
-      lvar->offset = locals->offset + 8;
-      node->offset = lvar->offset;
-      locals = lvar;
-    }
-    return node;
+    return new_node_lvar(tok);
   }
 
   return new_node_num(expect_number());

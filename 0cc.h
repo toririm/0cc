@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// 関数の引数レジスタ
+extern char *ARG_RGST[];
+
 // トークンの種類
 typedef enum {
   TK_RESERVED,  // 記号
@@ -45,6 +48,7 @@ typedef enum {
   ND_FOR_UPDT_STMT,
   ND_BLOCK,
   ND_FUNC_CALL,
+  ND_FUNC,
 } NodeKind;
 
 typedef struct Node Node;
@@ -54,9 +58,10 @@ struct Node {
   Node *lhs;
   Node *rhs;
   int val;                // ND_NUMの値, if/for/whileなどのlabel_index
-  int offset;             // ND_LVAR
-  Node *nodes[100];       // ND_BLOCKの中身
-  char *func_name;        // ND_FUNC_CALL
+  int offset;             // ND_LVARの変数, ND_FUNCの総変数のベースポインタからのオフセット
+  Node *stmts[100];       // ND_BLOCK, ND_FUNCの中身
+  Node *args[7];          // ND_FUNC, ND_FUNC_CALLの引数, 6 + NULL
+  char *name;             // ND_FUNC, ND_FUNC_CALLの関数名
 };
 
 typedef struct LVar LVar;
@@ -74,10 +79,12 @@ extern char *user_input;
 // 現在着目しているトークン
 extern Token *token;
 
-// stmtのASTの配列
+// funcのASTの配列
 extern Node *code[100];
 
 // ローカル変数
+// パーサは関数ごとのパースに対して独立なので
+// 一時変数としてグローバルに定義しても問題ない
 extern LVar *locals;
 
 // ラベルの unique identifier
@@ -93,12 +100,18 @@ void expect(char *op);
 int expect_number();
 Token *consume_ident();
 bool at_eof();
+bool is_alnum(char c);
+LVar *find_lvar(Token *tok);
+LVar *new_lvar(char *name, int len);
+char *strcopy_n(char *src, int n);
 Token *new_token(TokenKind kind, Token *cur, char *str);
 Token *tokenize(char *p);
 
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+Node *new_node_lvar(Token *tok);
 void program();
+Node *func();
 Node *stmt();
 Node *expr();
 Node *assign();
@@ -115,5 +128,6 @@ void gen_lval(Node *node);
 void gen_if(Node *node);
 void gen_for_cond(Node *node);
 void gen_for_updt_stmt(Node *node);
-void gen_func(Node *node);
+void gen_func_call(Node *node);
 void gen(Node *node);
+void gen_func(Node *node);
