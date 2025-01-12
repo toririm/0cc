@@ -4,7 +4,7 @@ assert() {
   input="$2"
 
   ./0cc "$input" > tmp.s
-  cc -o tmp tmp.s
+  cc -o tmp tmp.s -z noexecstack
   ./tmp
   actual="$?"
 
