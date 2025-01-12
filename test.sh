@@ -61,5 +61,8 @@ assert 4 "plus(x, y){return x + y;} main(){plus(plus(plus(1, 1), 1), 1);}"
 assert 21 "plus6(a,b,c,d,e,f){return a+b+c+d+e+f;} main(){plus6(1, 2, 3, 4, 5, 6);}"
 assert 1 "plus(x, y){return x + y;} main(){plus(1, 0);}"
 assert 24 "plus(x, y){return x + y;} plus6(a,b,c,d,e,f){return a+b+c+d+e+f;} main(){plus6(plus(1, 0), plus(2, 3), 3, 4, 5, 6);}"
+assert 4 "foo(x, y){return 2 * x + y;} main(){foo(1, 2);}"
+assert 10 "double(x){return 2 * x;} main(){double(5);}"
+# assert 6 "loop(n){if(n==0)return 0; return n + loop(n-1);} main(){loop(3);}"
 
 echo OK
