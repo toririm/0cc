@@ -298,8 +298,7 @@ Node *stmt() {
   }
 
   if (consume("{")) {
-    node = calloc(1, sizeof(Node));
-    node->kind = ND_BLOCK;
+    node = new_node(ND_BLOCK, NULL, NULL);
     int i = 0;
     // ブロック内の stmts を保存する
     while (!consume("}")) {
@@ -311,9 +310,7 @@ Node *stmt() {
 
 
   if (consume("return")) {
-    node = calloc(1, sizeof(Node));
-    node->kind = ND_RETURN;
-    node->lhs = expr();
+    node = new_node(ND_RETURN, expr(), NULL);
   } else {
     node = expr();
   }
@@ -401,10 +398,10 @@ Node *primary() {
 
   Token *tok = consume_ident();
   if (tok) {
-    Node *node = calloc(1, sizeof(Node));
+    Node *node;
 
     if (consume("(")) {
-      node->kind = ND_FUNC_CALL;
+      node = new_node(ND_FUNC_CALL, NULL, NULL);
       node->val = label_index++;
       node->func_name = strcopy_n(tok->str, tok->len);
       int i = 0;
@@ -419,7 +416,7 @@ Node *primary() {
       return node;
     }
 
-    node->kind = ND_LVAR;
+    node = new_node(ND_LVAR, NULL, NULL);
     
     LVar *lvar = find_lvar(tok);
     if (lvar) {
