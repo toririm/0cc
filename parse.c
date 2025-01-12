@@ -157,7 +157,7 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    if (strchr("+-*/%()<>=;{}", *p)) {
+    if (strchr("+-*/%()<>=;{},", *p)) {
       cur = new_token(TK_RESERVED, cur, p++);
       cur->len = 1;
       continue;
@@ -202,7 +202,7 @@ add        = mul ("+" mul | "-" mul)*
 mul        = unary ("*" unary | "/" unary | "%" unary)*
 unary      = ("+" | "-")? primary
 primary    = num
-           | ident ("(" ")")?
+           | ident ("(" (expr ("," expr)* )? ")")?
            | "(" expr ")"
 */
 
@@ -398,7 +398,14 @@ Node *primary() {
       node->func_name = calloc(tok->len, sizeof(char));
       strncpy(node->func_name, tok->str, tok->len);
       node->func_name[tok->len] = '\0';
-      expect(")");
+      if (!consume(")")) {
+        int i = 0;
+        node->nodes[i++] = expr();
+        while (!consume(")")) {
+          expect(",");
+          node->nodes[i++] = expr();
+        }
+      }
       return node;
     }
 
