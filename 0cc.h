@@ -49,7 +49,6 @@ typedef enum {
   ND_BLOCK,
   ND_FUNC_CALL,
   ND_FUNC,
-  ND_FUNC_ARG,
 } NodeKind;
 
 typedef struct Node Node;
@@ -59,10 +58,10 @@ struct Node {
   Node *lhs;
   Node *rhs;
   int val;                // ND_NUMの値, if/for/whileなどのlabel_index
-  int offset;             // ND_LVAR, ND_FUNC_ARGの各変数, ND_FUNCの総変数のベースポインタからのオフセット
+  int offset;             // ND_LVARの変数, ND_FUNCの総変数のベースポインタからのオフセット
   Node *stmts[100];       // ND_BLOCK, ND_FUNCの中身
   Node *args[7];          // ND_FUNC, ND_FUNC_CALLの引数, 6 + NULL
-  char *name;             // ND_FUNC, ND_FUNC_CALLの関数名, ND_FUNC_ARGの名前
+  char *name;             // ND_FUNC, ND_FUNC_CALLの関数名
 };
 
 typedef struct LVar LVar;

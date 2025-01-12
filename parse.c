@@ -260,33 +260,18 @@ Node *func() {
   node->name = strcopy_n(tok->str, tok->len);
 
   int arg_idx = 0;
-  if (!consume(")")) { 
+  while (!consume(")")) {
+    if (arg_idx > 0) expect(",");
+
     tok = consume_ident();
     if (tok) error("関数の引数が不正です\n");
 
-    LVar *lvar;
-    Node *arg;
-
-    lvar = new_lvar(tok->str, tok->len);
-    arg = new_node(ND_FUNC_ARG, NULL, NULL);
+    LVar *lvar = new_lvar(tok->str, tok->len);
+    Node *arg = new_node(ND_LVAR, NULL, NULL);
     arg->name = strcopy_n(tok->str, tok->len);
     arg->offset = lvar->offset;
 
     node->args[arg_idx++] = arg;
-
-    while (!consume(")")) {
-      expect(",");
-
-      tok = consume_ident();
-      if (tok) error("関数の引数が不正です\n");
-
-      lvar = new_lvar(tok->str, tok->len);
-      arg = new_node(ND_FUNC_ARG, NULL, NULL);
-      arg->name = strcopy_n(tok->str, tok->len);
-      arg->offset = lvar->offset;
-
-      node->args[arg_idx++] = arg;
-    }
   }
   node->args[arg_idx] = NULL;
 
@@ -478,12 +463,11 @@ Node *primary() {
     node = new_node(ND_LVAR, NULL, NULL);
     
     LVar *lvar = find_lvar(tok);
-    if (lvar) {
-      node->offset = lvar->offset;
-    } else {
-      LVar *lvar = new_lvar(tok->str, tok->len);
-      node->offset = lvar->offset;
+    if (!lvar) {
+      lvar = new_lvar(tok->str, tok->len);
     }
+    node->offset = lvar->offset;
+    
     return node;
   }
 

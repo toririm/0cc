@@ -235,5 +235,8 @@ void gen_func(Node *node) {
   printf("  mov rbp, rsp\n");
   printf("  sub rsp, %d\n", node->offset);
 
-
+  int arg_idx = 0;
+  while (node->args[arg_idx]) {
+    
+  }
 }
