@@ -86,7 +86,7 @@ void gen_func_call(Node *node) {
   // popやpushは8byte単位で動かすのでズレている場合は決めうちで8下げる
   // RSP -= 8;
   printf("  sub rsp, 8\n");
-  printf("  call %s\n", node->func_name);
+  printf("  call %s\n", node->name);
   printf("  add rsp, 8\n");
   printf("  push rax\n");
   printf("  jmp .Lend%d\n", node->val);
@@ -97,7 +97,7 @@ void gen_func_call(Node *node) {
   printf("  pop rdi\n");
   printf("  pop rdx\n");
   printf("  pop rax\n");
-  printf("  call %s\n", node->func_name);
+  printf("  call %s\n", node->name);
   printf("  push rax\n");
 
   // end if
@@ -223,4 +223,12 @@ void gen(Node *node) {
   }
 
   printf("  push rax\n");
+}
+
+void gen_func(Node *node) {
+  if (node->kind != ND_FUNC)
+    error("ND_FUNC expected but found %d\n", node->kind);
+  
+  printf("%s:\n", node->name);
+  
 }

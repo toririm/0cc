@@ -239,6 +239,44 @@ void program() {
   code[i] = NULL;
 }
 
+Node *func() {
+  Token *tok;
+
+  tok = consume_ident();
+  if (!tok) error("関数の識別子が不正です\n");
+  expect("(");
+
+  Node *node = new_node(ND_FUNC, NULL, NULL);
+  node->name = strcopy_n(tok->str, tok->len);
+
+  int arg_idx = 0;
+  if (!consume(")")) {
+    tok = consume_ident();
+    if (tok) error("関数の引数が不正です\n");
+    Node *arg;
+    arg = new_node(ND_FUNC_ARG, NULL, NULL);
+    arg->name = strcopy_n(tok->str, tok->len);
+    node->args[arg_idx++] = arg;
+    while (!consume(")")) {
+      expect(",");
+      tok = consume_ident();
+      if (tok) error("関数の引数が不正です\n");
+      arg = new_node(ND_FUNC_ARG, NULL, NULL);
+      arg->name = strcopy_n(tok->str, tok->len);
+      node->args[arg_idx++] = arg;
+    }
+  }
+  node->args[arg_idx] = NULL;
+
+  expect("{");
+  int stmt_idx = 0;
+  while (!consume("}"))
+    node->stmts[stmt_idx++] = stmt();
+  node->stmts[stmt_idx] = NULL;
+
+  return node;
+}
+
 Node *stmt() {
   Node *node;
 
@@ -403,7 +441,7 @@ Node *primary() {
     if (consume("(")) {
       node = new_node(ND_FUNC_CALL, NULL, NULL);
       node->val = label_index++;
-      node->func_name = strcopy_n(tok->str, tok->len);
+      node->name = strcopy_n(tok->str, tok->len);
       int i = 0;
       if (!consume(")")) {
         node->args[i++] = expr();

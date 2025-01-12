@@ -45,6 +45,8 @@ typedef enum {
   ND_FOR_UPDT_STMT,
   ND_BLOCK,
   ND_FUNC_CALL,
+  ND_FUNC,
+  ND_FUNC_ARG,
 } NodeKind;
 
 typedef struct Node Node;
@@ -54,10 +56,10 @@ struct Node {
   Node *lhs;
   Node *rhs;
   int val;                // ND_NUMの値, if/for/whileなどのlabel_index
-  int offset;             // ND_LVAR
-  Node *stmts[100];       // ND_BLOCKの中身
-  Node *args[7];          // ND_FUNC_CALLの引数, 6 + NULL
-  char *func_name;        // ND_FUNC_CALLの関数名
+  int offset;             // ND_LVAR, ND_FUNC_ARG
+  Node *stmts[100];       // ND_BLOCK, ND_FUNCの中身
+  Node *args[7];          // ND_FUNC, ND_FUNC_CALLの引数, 6 + NULL
+  char *name;             // ND_FUNC, ND_FUNC_CALLの関数名, ND_FUNC_ARGの名前
 };
 
 typedef struct LVar LVar;
@@ -118,3 +120,4 @@ void gen_for_cond(Node *node);
 void gen_for_updt_stmt(Node *node);
 void gen_func_call(Node *node);
 void gen(Node *node);
+void gen_func(Node *node);
