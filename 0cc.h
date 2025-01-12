@@ -116,5 +116,5 @@ void gen_lval(Node *node);
 void gen_if(Node *node);
 void gen_for_cond(Node *node);
 void gen_for_updt_stmt(Node *node);
-void gen_func(Node *node);
+void gen_func_call(Node *node);
 void gen(Node *node);

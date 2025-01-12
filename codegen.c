@@ -49,7 +49,7 @@ void gen_for_updt_stmt(Node *node) {
   printf("  jmp .Lbegin%d\n", node->val);
 }
 
-void gen_func(Node *node) {
+void gen_func_call(Node *node) {
   char *args[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 
   int i = 0;
@@ -169,7 +169,7 @@ void gen(Node *node) {
       }
       return;
     case ND_FUNC_CALL:
-      gen_func(node);
+      gen_func_call(node);
       return;
   }
 
