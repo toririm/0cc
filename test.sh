@@ -56,5 +56,10 @@ assert 1 "5 % 4;"
 assert 1 "a=6; if (a%3==0) {if(a%5==0)return 0;else return 1;} else return 2;"
 assert 0 "a=15; if (a%3==0) {if(a%5==0)return 0;else return 1;} else return 2;"
 assert 2 "a=7; if (a%3==0) {if(a%5==0)return 0;else return 1;} else return 2;"
+assert 5 "plus(1 + 1, 6 / 2);"
+assert 4 "plus(plus(plus(1, 1), 1), 1);"
+assert 21 "plus6(1, 2, 3, 4, 5, 6);"
+assert 1 "plus(1, 0);"
+assert 24 "plus6(plus(1, 0), plus(2, 3), 3, 4, 5, 6);"
 
 echo OK
