@@ -87,6 +87,16 @@ LVar *find_lvar(Token *tok) {
   return NULL;
 }
 
+/*
+  srcのn文字+ヌル文字\0のn+1のcharを新たに確保し、先頭のポインタを返す
+*/
+char *strcopy_n(char *src, int n) {
+  char *rtn = calloc(n + 1, sizeof(char));
+  strncpy(rtn, src, n);
+  rtn[n] = '\0';
+  return rtn;
+}
+
 // 新しいトークンを作成してcurに繋げる
 // このあとに cur->len を指定してやる必要がある
 Token *new_token(TokenKind kind, Token *cur, char *str) {
@@ -396,9 +406,7 @@ Node *primary() {
     if (consume("(")) {
       node->kind = ND_FUNC_CALL;
       node->val = label_index++;
-      node->func_name = calloc(tok->len, sizeof(char));
-      strncpy(node->func_name, tok->str, tok->len);
-      node->func_name[tok->len] = '\0';
+      node->func_name = strcopy_n(tok->str, tok->len);
       int i = 0;
       if (!consume(")")) {
         node->args[i++] = expr();
