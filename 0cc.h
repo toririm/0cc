@@ -77,10 +77,12 @@ extern char *user_input;
 // 現在着目しているトークン
 extern Token *token;
 
-// stmtのASTの配列
+// funcのASTの配列
 extern Node *code[100];
 
 // ローカル変数
+// パーサは関数ごとのパースに対して独立なので
+// 一時変数としてグローバルに定義しても問題ない
 extern LVar *locals;
 
 // ラベルの unique identifier
@@ -96,6 +98,10 @@ void expect(char *op);
 int expect_number();
 Token *consume_ident();
 bool at_eof();
+bool is_alnum(char c);
+LVar *find_lvar(Token *tok);
+LVar *new_lvar(char *name, int len);
+char *strcopy_n(char *src, int n);
 Token *new_token(TokenKind kind, Token *cur, char *str);
 Token *tokenize(char *p);
 

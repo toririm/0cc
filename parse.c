@@ -87,6 +87,16 @@ LVar *find_lvar(Token *tok) {
   return NULL;
 }
 
+LVar *new_lvar(char *name, int len) {
+  LVar *lvar = calloc(1, sizeof(LVar));
+  lvar->next = locals;
+  lvar->name = name;
+  lvar->len = len;
+  lvar->offset = locals->offset + 8;
+  locals = lvar;
+  return lvar;
+}
+
 /*
   srcのn文字+ヌル文字\0のn+1のcharを新たに確保し、先頭のポインタを返す
 */
@@ -460,13 +470,8 @@ Node *primary() {
     if (lvar) {
       node->offset = lvar->offset;
     } else {
-      lvar = calloc(1, sizeof(LVar));
-      lvar->next = locals;
-      lvar->name = tok->str;
-      lvar->len = tok->len;
-      lvar->offset = locals->offset + 8;
+      LVar *lvar = new_lvar(tok->str, tok->len);
       node->offset = lvar->offset;
-      locals = lvar;
     }
     return node;
   }
