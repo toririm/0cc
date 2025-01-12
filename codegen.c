@@ -114,6 +114,31 @@ void gen(Node *node) {
       }
       return;
     case ND_FUNC_CALL:
+      /*
+        x86-64のABIのため
+        rspが16の倍数になるように調整
+      */
+
+      // 引数の数, 第3引数として使われるRAX, RDXを一旦退避
+      printf("  push rax\n");
+      printf("  push rdx\n");
+
+      // RSP % 16
+      printf("  mov rax, rsp\n");
+      printf("  cqo\n");
+      printf("  idiv 16\n");
+      // 商->RAX, 余り->RDX
+      // if (RSP % 16)
+      printf("  cmp rdx, 0\n");
+      printf("  je .Lend%d\n", node->val);
+      // RSP -= RDX;
+      printf("  sub rsp, rdx\n");
+      printf(".Lend%d:\n", node->val);
+
+      // スタックに退避していたRAX, RDXを戻す
+      printf("  pop rdx\n");
+      printf("  pop rax\n");
+
       printf("  call %s\n", node->func_name);
       printf("  push rax\n");
       return;

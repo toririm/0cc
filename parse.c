@@ -394,6 +394,7 @@ Node *primary() {
 
     if (consume("(")) {
       node->kind = ND_FUNC_CALL;
+      node->val = label_index++;
       node->func_name = calloc(tok->len, sizeof(char));
       strncpy(node->func_name, tok->str, tok->len);
       node->func_name[tok->len] = '\0';
