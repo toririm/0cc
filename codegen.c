@@ -50,14 +50,13 @@ void gen_for_updt_stmt(Node *node) {
 }
 
 void gen_func_call(Node *node) {
-  char *args[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 
   int i = 0;
   for (; node->args[i] && i < 6; i++) {
     gen(node->args[i]);
   }
   i--;
-  while (i >= 0) printf("  pop %s\n", args[i--]);
+  while (i >= 0) printf("  pop %s\n", ARG_RGST[i--]);
 
   /*
     x86-64のABIのため
@@ -230,5 +229,11 @@ void gen_func(Node *node) {
     error("ND_FUNC expected but found %d\n", node->kind);
   
   printf("%s:\n", node->name);
-  
+
+  // プロローグ
+  printf("  push rbp\n");
+  printf("  mov rbp, rsp\n");
+  printf("  sub rsp, %d\n", node->offset);
+
+
 }

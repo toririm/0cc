@@ -1,5 +1,7 @@
 #include "0cc.h"
 
+char *ARG_RGST[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
+
 char *user_input;
 Token *token;
 Node *code[100];
