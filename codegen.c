@@ -50,6 +50,14 @@ void gen_for_updt_stmt(Node *node) {
 }
 
 void gen_func(Node *node) {
+  char *args[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
+
+  int i = 0;
+  for (int i = 0; node->nodes[i] && i < 6; i++) {
+    gen(node->nodes[i]);
+    printf("  pop %s\n", args[i]);
+  }
+
   /*
     x86-64のABIのため
     rspが16の倍数になるように調整
