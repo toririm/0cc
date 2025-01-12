@@ -55,8 +55,9 @@ struct Node {
   Node *rhs;
   int val;                // ND_NUMの値, if/for/whileなどのlabel_index
   int offset;             // ND_LVAR
-  Node *nodes[100];       // ND_BLOCKの中身
-  char *func_name;        // ND_FUNC_CALL
+  Node *stmts[100];       // ND_BLOCKの中身
+  Node *args[7];          // ND_FUNC_CALLの引数, 6 + NULL
+  char *func_name;        // ND_FUNC_CALLの関数名
 };
 
 typedef struct LVar LVar;

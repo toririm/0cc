@@ -293,9 +293,9 @@ Node *stmt() {
     int i = 0;
     // ブロック内の stmts を保存する
     while (!consume("}")) {
-      node->nodes[i++] = stmt();
+      node->stmts[i++] = stmt();
     }
-    node->nodes[i] = NULL;
+    node->stmts[i] = NULL;
     return node;
   }
 
@@ -401,13 +401,13 @@ Node *primary() {
       node->func_name[tok->len] = '\0';
       int i = 0;
       if (!consume(")")) {
-        node->nodes[i++] = expr();
+        node->args[i++] = expr();
         while (!consume(")")) {
           expect(",");
-          node->nodes[i++] = expr();
+          node->args[i++] = expr();
         }
       }
-      node->nodes[i] = NULL;
+      node->args[i] = NULL;
       return node;
     }
 

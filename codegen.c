@@ -53,8 +53,8 @@ void gen_func(Node *node) {
   char *args[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 
   int i = 0;
-  for (; node->nodes[i] && i < 6; i++) {
-    gen(node->nodes[i]);
+  for (; node->args[i] && i < 6; i++) {
+    gen(node->args[i]);
   }
   i--;
   while (i >= 0) printf("  pop %s\n", args[i--]);
@@ -162,8 +162,8 @@ void gen(Node *node) {
     case ND_BLOCK:
       int i = 0;
       // stmts を取り出す
-      while (node->nodes[i]) {
-        gen(node->nodes[i++]);
+      while (node->stmts[i]) {
+        gen(node->stmts[i++]);
 
         printf("  pop rax\n");
       }
