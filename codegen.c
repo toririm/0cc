@@ -119,28 +119,44 @@ void gen(Node *node) {
         rspが16の倍数になるように調整
       */
 
-      // 引数の数, 第3引数として使われるRAX, RDXを一旦退避
+      // 引数の数, 第3引数, 第1引数として使われるRAX, RDX, RDIを一旦退避
       printf("  push rax\n");
       printf("  push rdx\n");
+      printf("  push rdi\n");
 
       // RSP % 16
+      printf("  mov rdi, 16\n");
       printf("  mov rax, rsp\n");
       printf("  cqo\n");
-      printf("  idiv 16\n");
+      printf("  idiv rdi\n");
       // 商->RAX, 余り->RDX
+
       // if (RSP % 16)
       printf("  cmp rdx, 0\n");
-      printf("  je .Lend%d\n", node->val);
-      // RSP -= RDX;
-      printf("  sub rsp, rdx\n");
-      printf(".Lend%d:\n", node->val);
-
-      // スタックに退避していたRAX, RDXを戻す
+      printf("  je .Lelse%d\n", node->val);
+      // スタックに退避していたRAX, RDX, RDIを戻す
+      printf("  pop rdi\n");
       printf("  pop rdx\n");
       printf("  pop rax\n");
+      // popやpushは8byte単位で動かすのでズレている場合は決めうちで8下げる
+      // RSP -= 8;
+      printf("  sub rsp, 8\n");
+      printf("  call %s\n", node->func_name);
+      printf("  add rsp, 8\n");
+      printf("  push rax\n");
+      printf("  jmp .Lend%d\n", node->val);
 
+      // else
+      printf(".Lelse%d:\n", node->val);
+      // スタックに退避していたRAX, RDX, RDIを戻す
+      printf("  pop rdi\n");
+      printf("  pop rdx\n");
+      printf("  pop rax\n");
       printf("  call %s\n", node->func_name);
       printf("  push rax\n");
+
+      // end if
+      printf(".Lend%d:\n", node->val);
       return;
   }
 
