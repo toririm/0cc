@@ -53,14 +53,15 @@ void gen_func(Node *node) {
   char *args[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 
   int i = 0;
-  for (int i = 0; node->nodes[i] && i < 6; i++) {
+  for (; node->nodes[i] && i < 6; i++) {
     gen(node->nodes[i]);
-    printf("  pop %s\n", args[i]);
   }
+  i--;
+  while (i >= 0) printf("  pop %s\n", args[i--]);
 
   /*
     x86-64のABIのため
-    rspが16の倍数になるように調整
+    RSPが16の倍数になるように調整
   */
 
   // 引数の数, 第3引数, 第1引数として使われるRAX, RDX, RDIを一旦退避

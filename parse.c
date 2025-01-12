@@ -398,14 +398,15 @@ Node *primary() {
       node->func_name = calloc(tok->len, sizeof(char));
       strncpy(node->func_name, tok->str, tok->len);
       node->func_name[tok->len] = '\0';
+      int i = 0;
       if (!consume(")")) {
-        int i = 0;
         node->nodes[i++] = expr();
         while (!consume(")")) {
           expect(",");
           node->nodes[i++] = expr();
         }
       }
+      node->nodes[i] = NULL;
       return node;
     }
 
