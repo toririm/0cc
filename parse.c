@@ -242,6 +242,18 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *new_node_lvar(Token *tok) {
+  Node *node = new_node(ND_LVAR, NULL, NULL);
+    
+  LVar *lvar = find_lvar(tok);
+  if (!lvar) {
+    lvar = new_lvar(tok->str, tok->len);
+  }
+  node->offset = lvar->offset;
+
+  return node;
+}
+
 void program() {
   int i = 0;
   while (!at_eof())
@@ -460,15 +472,7 @@ Node *primary() {
       return node;
     }
 
-    node = new_node(ND_LVAR, NULL, NULL);
-    
-    LVar *lvar = find_lvar(tok);
-    if (!lvar) {
-      lvar = new_lvar(tok->str, tok->len);
-    }
-    node->offset = lvar->offset;
-    
-    return node;
+    return new_node_lvar(tok);
   }
 
   return new_node_num(expect_number());
