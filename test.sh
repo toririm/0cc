@@ -4,7 +4,7 @@ assert() {
   input="$2"
 
   ./0cc "$input" > tmp.s
-  cc -o tmp tmp.s
+  cc -o tmp tmp.s test.o
   ./tmp
   actual="$?"
 
@@ -50,5 +50,16 @@ assert 5 "i = 0; for (;i<5;i=i+1) i;"
 assert 5 "i = 0; for (;i<5;) i = i + 1;"
 assert 5 "i = 0; for (;;) {if (i<5) {i=i+1;} else return i;} 0;"
 assert 45 "sum = 0; for (i=0;i<10;i=i+1) {sum=sum+i;} return sum;"
+assert 128 "foo(); bar() + 1;"
+assert 129 "foo(); 1 + bar() + 1;"
+assert 1 "5 % 4;"
+assert 1 "a=6; if (a%3==0) {if(a%5==0)return 0;else return 1;} else return 2;"
+assert 0 "a=15; if (a%3==0) {if(a%5==0)return 0;else return 1;} else return 2;"
+assert 2 "a=7; if (a%3==0) {if(a%5==0)return 0;else return 1;} else return 2;"
+assert 5 "plus(1 + 1, 6 / 2);"
+assert 4 "plus(plus(plus(1, 1), 1), 1);"
+assert 21 "plus6(1, 2, 3, 4, 5, 6);"
+assert 1 "plus(1, 0);"
+assert 24 "plus6(plus(1, 0), plus(2, 3), 3, 4, 5, 6);"
 
 echo OK

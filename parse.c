@@ -157,7 +157,7 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    if (strchr("+-*/()<>=;{}", *p)) {
+    if (strchr("+-*/%()<>=;{},", *p)) {
       cur = new_token(TK_RESERVED, cur, p++);
       cur->len = 1;
       continue;
@@ -199,9 +199,11 @@ assign     = equality ("=" assign)?
 equality   = relational ("==" relational | "!=" relational)*
 relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 add        = mul ("+" mul | "-" mul)*
-mul        = unary ("*" unary | "/" unary)*
+mul        = unary ("*" unary | "/" unary | "%" unary)*
 unary      = ("+" | "-")? primary
-primary    = num | ident | "(" expr ")"
+primary    = num
+           | ident ("(" (expr ("," expr)* )? ")")?
+           | "(" expr ")"
 */
 
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
@@ -288,10 +290,11 @@ Node *stmt() {
     node = calloc(1, sizeof(Node));
     node->kind = ND_BLOCK;
     int i = 0;
+    // ブロック内の stmts を保存する
     while (!consume("}")) {
-      node->block_stmts[i++] = stmt();
+      node->nodes[i++] = stmt();
     }
-    node->block_stmts[i] = NULL;
+    node->nodes[i] = NULL;
     return node;
   }
 
@@ -371,6 +374,8 @@ Node *mul() {
       node = new_node(ND_MUL, node, unary());
     else if (consume("/"))
       node = new_node(ND_DIV, node, unary());
+    else if (consume("%"))
+      node = new_node(ND_MOD, node, unary());
     else
       return node;
   }
@@ -386,6 +391,25 @@ Node *primary() {
   Token *tok = consume_ident();
   if (tok) {
     Node *node = calloc(1, sizeof(Node));
+
+    if (consume("(")) {
+      node->kind = ND_FUNC_CALL;
+      node->val = label_index++;
+      node->func_name = calloc(tok->len, sizeof(char));
+      strncpy(node->func_name, tok->str, tok->len);
+      node->func_name[tok->len] = '\0';
+      int i = 0;
+      if (!consume(")")) {
+        node->nodes[i++] = expr();
+        while (!consume(")")) {
+          expect(",");
+          node->nodes[i++] = expr();
+        }
+      }
+      node->nodes[i] = NULL;
+      return node;
+    }
+
     node->kind = ND_LVAR;
     
     LVar *lvar = find_lvar(tok);

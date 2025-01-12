@@ -49,6 +49,61 @@ void gen_for_updt_stmt(Node *node) {
   printf("  jmp .Lbegin%d\n", node->val);
 }
 
+void gen_func(Node *node) {
+  char *args[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
+
+  int i = 0;
+  for (; node->nodes[i] && i < 6; i++) {
+    gen(node->nodes[i]);
+  }
+  i--;
+  while (i >= 0) printf("  pop %s\n", args[i--]);
+
+  /*
+    x86-64のABIのため
+    RSPが16の倍数になるように調整
+  */
+
+  // 引数の数, 第3引数, 第1引数として使われるRAX, RDX, RDIを一旦退避
+  printf("  push rax\n");
+  printf("  push rdx\n");
+  printf("  push rdi\n");
+
+  // RSP % 16
+  printf("  mov rdi, 16\n");
+  printf("  mov rax, rsp\n");
+  printf("  cqo\n");
+  printf("  idiv rdi\n");
+  // 商->RAX, 余り->RDX
+
+  // if (RSP % 16)
+  printf("  cmp rdx, 0\n");
+  printf("  je .Lelse%d\n", node->val);
+  // スタックに退避していたRAX, RDX, RDIを戻す
+  printf("  pop rdi\n");
+  printf("  pop rdx\n");
+  printf("  pop rax\n");
+  // popやpushは8byte単位で動かすのでズレている場合は決めうちで8下げる
+  // RSP -= 8;
+  printf("  sub rsp, 8\n");
+  printf("  call %s\n", node->func_name);
+  printf("  add rsp, 8\n");
+  printf("  push rax\n");
+  printf("  jmp .Lend%d\n", node->val);
+
+  // else
+  printf(".Lelse%d:\n", node->val);
+  // スタックに退避していたRAX, RDX, RDIを戻す
+  printf("  pop rdi\n");
+  printf("  pop rdx\n");
+  printf("  pop rax\n");
+  printf("  call %s\n", node->func_name);
+  printf("  push rax\n");
+
+  // end if
+  printf(".Lend%d:\n", node->val);
+}
+
 void gen(Node *node) {
   switch (node->kind) {
     case ND_NUM:
@@ -106,11 +161,15 @@ void gen(Node *node) {
       return;
     case ND_BLOCK:
       int i = 0;
-      while (node->block_stmts[i]) {
-        gen(node->block_stmts[i++]);
+      // stmts を取り出す
+      while (node->nodes[i]) {
+        gen(node->nodes[i++]);
 
         printf("  pop rax\n");
       }
+      return;
+    case ND_FUNC_CALL:
+      gen_func(node);
       return;
   }
 
@@ -135,6 +194,11 @@ void gen(Node *node) {
     case ND_DIV:
       printf("  cqo\n");
       printf("  idiv rdi\n");
+      break;
+    case ND_MOD:
+      printf("  cqo\n");
+      printf("  idiv rdi\n");
+      printf("  mov rax, rdx\n");
       break;
     case ND_EQU:
       printf("  cmp rax, rdi\n");

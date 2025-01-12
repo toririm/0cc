@@ -28,6 +28,7 @@ typedef enum {
   ND_SUB,
   ND_MUL,
   ND_DIV,
+  ND_MOD,
   ND_EQU,
   ND_NEQ,
   ND_LES,
@@ -43,6 +44,7 @@ typedef enum {
   ND_FOR_COND,
   ND_FOR_UPDT_STMT,
   ND_BLOCK,
+  ND_FUNC_CALL,
 } NodeKind;
 
 typedef struct Node Node;
@@ -51,9 +53,10 @@ struct Node {
   NodeKind kind;
   Node *lhs;
   Node *rhs;
-  int val;
-  int offset; // ND_LVAR
-  Node *block_stmts[100]; // ND_BLOCK
+  int val;                // ND_NUMの値, if/for/whileなどのlabel_index
+  int offset;             // ND_LVAR
+  Node *nodes[100];       // ND_BLOCKの中身
+  char *func_name;        // ND_FUNC_CALL
 };
 
 typedef struct LVar LVar;
@@ -112,4 +115,5 @@ void gen_lval(Node *node);
 void gen_if(Node *node);
 void gen_for_cond(Node *node);
 void gen_for_updt_stmt(Node *node);
+void gen_func(Node *node);
 void gen(Node *node);
